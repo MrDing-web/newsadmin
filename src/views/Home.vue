@@ -1,5 +1,5 @@
 <template>
-    <el-container>
+    <el-container class="pageWrapper">
         <el-aside width="200px">
             <div class="title">
                 黑马头条
@@ -9,14 +9,15 @@
             <el-menu
                     class="el-menu-vertical-demo"
                     text-color="#fff"
+                    :default-active="$route.path"
                     active-text-color="#ffd04b">
-                <el-menu-item index="2">
+                <el-menu-item index="/postlist" @click="jumpPage('/postlist')">
                     <i class="el-icon-menu"></i>
                     <span slot="title">文章列表</span>
                 </el-menu-item>
-                <el-menu-item index="4">
+                <el-menu-item index="/editpost" @click="jumpPage('/editpost')">
                     <i class="el-icon-s-promotion"></i>
-                    <span slot="title">发布文章</span>
+                    <span slot="title">编辑文章</span>
                 </el-menu-item>
             </el-menu>
 
@@ -28,24 +29,44 @@
                 <img v-else src="@/assets/logo.png" alt="">
                 <div class="nickname">{{this.user.nickname}}</div>
             </el-header>
-            <el-main>Main</el-main>
+            <el-main>
+                <Breadcrumb/>
+                <router-view></router-view>
+            </el-main>
         </el-container>
     </el-container>
 </template>
 
 <script>
-
+    import Breadcrumb from "../components/Breadcrumb";
     export default {
         name: 'Home',
+        components:{
+            Breadcrumb
+        },
         data() {
             return {
                 user: JSON.parse(localStorage.getItem("user"))
+            }
+        },
+        methods: {
+            jumpPage(path) {
+                // 跳转之前判断是否已经在当前页,避免路由冗余发生报错
+                if (this.$route.path !== path) {
+                    this.$router.push(path);
+                }
             }
         }
     }
 </script>
 
 <style lang="less" scoped>
+    .pageWrapper {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
     .el-header {
         background-color: #B3C0D1;
         color: #333;
@@ -75,9 +96,8 @@
         user-select: none;
         text-align: center;
         line-height: 200px;
-        position: absolute;
-        top: 0;
-        bottom: 0;
+
+        /*height: 100%;*/
 
         .title {
             height: 60px;
@@ -106,8 +126,7 @@
 
     .el-main {
         color: #333;
-        text-align: center;
-        line-height: 160px;
+
     }
 
     body > .el-container {
@@ -118,7 +137,6 @@
     .el-container:nth-child(6) .el-aside {
         line-height: 260px;
     }
-
     .el-container:nth-child(7) .el-aside {
         line-height: 320px;
     }
