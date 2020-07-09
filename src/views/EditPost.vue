@@ -9,7 +9,8 @@
                 <span>内容</span>
                 <vue-editor
                         v-model="content"
-
+                        :useCustomImageHandler="true"
+                        @image-added="handleImageAdded"
                 ></vue-editor>
             </li>
             <li class="li">
@@ -100,7 +101,6 @@
                     url: "/post/" + this.$route.query.id
                 }).then(res => {
                     const data = res.data.data;
-                    console.log(data);
                     if (data) {
                         //标题
                         this.input = data.title;
@@ -139,7 +139,34 @@
                     this.categoriesList = res.data.data.filter(item => item.id !== 1 && item.id !== 999);
                 })
             },
+            handleImageAdded(file, Editor, cursorLocation, resetUploader){
+                // 这里是富文本框选择完图片会触发的函数
+                // 带有四个参数 file, Editor, cursorLocation, resetUploader
+                // file 选中的图片
+                // Editor 是当前编辑器实例对象
+                // cursorLocation 当前光标所在位置
+                // resetUploader 这是上传完图片用来重新初始化上传功能的函数
 
+                // 1. 上传图片
+                // ajax 配合 FormData
+                console.log(111)
+                let formData = new FormData();
+                formData.append('file', file);
+                this.$axios({
+                    url: '/upload',
+                    method: 'post',
+                    data: formData
+                }).then(res=>{
+                    console.log(res.data.data.url);
+                    // 2. 拿到图片地址
+                    // 要放入富文本框当中
+                    // Editor.insertEmbed() 这是编辑器自带函数, 可以往编辑框内放入内容
+                    // 三个参数 位置 / 类型 / 内容
+                    Editor.insertEmbed(cursorLocation, 'image', this.$axios.defaults.baseURL + res.data.data.url);
+                    // 将图片插入到富文本框之后还要重置上传功能
+                    resetUploader();
+                })
+            },
             handleRemove(file, fileList) {
             },
             handlePictureCardPreview(file) {
