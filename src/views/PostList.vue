@@ -47,9 +47,11 @@
                     label="操作"
                     width="300"
                     >
-                <el-button type="primary">编辑</el-button>
-                <el-button type="danger">删除</el-button>
-
+                    <el-button
+                            type="primary"
+                            slot-scope="scope"
+                            @click="$router.push({path:'/editpost',query:{id:scope.row.id}})"
+                    >编辑</el-button>
             </el-table-column>
         </el-table>
         <el-pagination
@@ -90,7 +92,7 @@
                 }).then(res => {
                     if (res.data.total > 0) {
                         res.data.data.forEach(item => {
-                            item.create_date = item.create_date.split("T")[0]
+                            item.create_date = item.create_date.split("T")[0];
                         })
                         this.postList = res.data.data;
                         this.total = res.data.total;
