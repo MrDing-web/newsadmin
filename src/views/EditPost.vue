@@ -92,8 +92,6 @@
         created() {
             this.getCategories();
             this.loadPage();
-
-
         },
         methods: {
             loadPage() {
@@ -108,7 +106,6 @@
                         this.content = data.content.replace(/div/g, "p");
                         //栏目
                         this.checkList = data.categories.map(item => item.name);
-                        // console.log(data.categories);
                         //封面
                         const newCover = data.cover.map(item => {
                             if (item.url && item.url.indexOf("http") === -1) {
@@ -123,19 +120,16 @@
                             newCover.length = 3;
                         }
                         this.fileList = newCover;
-                        // console.log(this.fileList);
-
                         //类型
                         this.radio = data.type + '';
                     }
-
-
                 })
             },
             getCategories() {
                 this.$axios({
                     url: '/category'
                 }).then(res => {
+                    console.log(res.data.data);
                     this.categoriesList = res.data.data.filter(item => item.id !== 1 && item.id !== 999);
                 })
             },
@@ -146,10 +140,8 @@
                 // Editor 是当前编辑器实例对象
                 // cursorLocation 当前光标所在位置
                 // resetUploader 这是上传完图片用来重新初始化上传功能的函数
-
                 // 1. 上传图片
                 // ajax 配合 FormData
-                console.log(111)
                 let formData = new FormData();
                 formData.append('file', file);
                 this.$axios({
@@ -157,7 +149,6 @@
                     method: 'post',
                     data: formData
                 }).then(res=>{
-                    console.log(res.data.data.url);
                     // 2. 拿到图片地址
                     // 要放入富文本框当中
                     // Editor.insertEmbed() 这是编辑器自带函数, 可以往编辑框内放入内容
@@ -168,18 +159,14 @@
                 })
             },
             handleRemove(file, fileList) {
+                this.changedPicList = fileList;
             },
             handlePictureCardPreview(file) {
-                console.log(file);
                 this.dialogImageUrl = file.url;
                 this.dialogVisible = true;
             },
-
             uploadSuccess(res, file, fileList) {
                 this.changedPicList.push({id: res.data.id});
-                // console.log(this.changedPicList);
-                // console.log(file);
-                // console.log(fileList);
             },
             submitChange() {
                 if (this.$route.query.id) {
@@ -194,7 +181,12 @@
                             type: Number(this.radio)
                         }
                     }).then(res => {
-                        // console.log(res);
+                        if(res.data.message==="文章编辑成功"){
+                            this.$message({
+                                message:'文章编辑成功',
+                                type:"success"
+                            });
+                        }
                     })
                 } else {
                     this.$axios({
@@ -208,7 +200,12 @@
                             type: Number(this.radio)
                         }
                     }).then(res => {
-                        console.log(res);
+                        if(res.data.message==="文章发布成功"){
+                            this.$message({
+                                message:'文章发布成功',
+                                type:"success"
+                            });
+                        }
                     })
 
                 }
