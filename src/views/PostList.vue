@@ -40,7 +40,8 @@
                     height="132"
             >
                 <template slot-scope="scope">
-                    <img :src="scope.row.cover[0].url" alt="" class="firstPic">
+                    <img v-if="/http/.test(scope.row.cover[0].url)" :src="scope.row.cover[0].url" alt="" class="firstPic">
+                    <img v-else :src="$axios.defaults.baseURL + scope.row.cover[0].url" alt="" class="firstPic">
                 </template>
             </el-table-column>
             <el-table-column
@@ -90,6 +91,7 @@
                         pageSize:this.pageSize
                     }
                 }).then(res => {
+                    console.log(res);
                     if (res.data.total > 0) {
                         res.data.data.forEach(item => {
                             item.create_date = item.create_date.split("T")[0];

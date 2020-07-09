@@ -26,6 +26,9 @@
                             list-type="picture-card"
                             :on-preview="handlePictureCardPreview"
                             :file-list="fileList"
+                            :headers="{
+                              Authorization: 'Bearer ' + token
+                            }"
                             :on-success = "uploadSuccess"
                             :on-remove="handleRemove">
                         <i class="el-icon-plus"></i>
@@ -71,7 +74,9 @@
                 dialogVisible: false,
                 radio:"2",
                 fileList:[],
-                changedcategoriesList:[]
+                changedcategoriesList:[],
+                changedPicList:[],
+                token:localStorage.getItem("token")
             }
         },
         watch:{
@@ -79,8 +84,8 @@
                 const arr = this.categoriesList.filter(item=>{
                     return this.checkList.indexOf(item.name) !== -1
                 })
-                this.changedcategoriesList = arr.map(item=>item.id);
-                console.log(this.changedcategoriesList);
+                this.changedcategoriesList = arr.map(item=>{return {id:item.id}});
+                // console.log(this.changedcategoriesList);
             }
         },
         created() {
@@ -89,78 +94,97 @@
 
 
         },
-        methods:{
-            loadPage(){
+        methods: {
+            loadPage() {
                 this.$axios({
-                    url:"/post/" + this.$route.query.id
-                }).then(res=>{
+                    url: "/post/" + this.$route.query.id
+                }).then(res => {
                     const data = res.data.data;
-                    // console.log(data);
-                    if(data){
+                    console.log(data);
+                    if (data) {
                         //标题
                         this.input = data.title;
                         //内容
-                        this.content = data.content.replace(/div/g,"p");
+                        this.content = data.content.replace(/div/g, "p");
                         //栏目
-                        this.checkList = data.categories.map(item=>item.name);
+                        this.checkList = data.categories.map(item => item.name);
                         // console.log(data.categories);
                         //封面
                         const newCover = data.cover.map(item => {
-                            if(item.url&&item.url.indexOf("http") === -1){
+                            if (item.url && item.url.indexOf("http") === -1) {
                                 item.url = this.$axios.defaults.baseURL + item.url;
                             }
-                            return {url:item.url}
+                            return {id: item.id, url: item.url}
                         })
-                        if(newCover.length >=3 ){
+                        this.changedPicList = newCover.map(item => {
+                            return {id: item.id}
+                        })
+                        if (newCover.length >= 3) {
                             newCover.length = 3;
                         }
                         this.fileList = newCover;
+                        // console.log(this.fileList);
+
                         //类型
                         this.radio = data.type + '';
                     }
 
 
-
                 })
             },
-            getCategories(){
+            getCategories() {
                 this.$axios({
-                    url:'/category'
-                }).then(res=>{
-                    this.categoriesList = res.data.data.filter(item=>item.id!==1&&item.id!==999);
+                    url: '/category'
+                }).then(res => {
+                    this.categoriesList = res.data.data.filter(item => item.id !== 1 && item.id !== 999);
                 })
             },
 
             handleRemove(file, fileList) {
             },
             handlePictureCardPreview(file) {
+                console.log(file);
                 this.dialogImageUrl = file.url;
                 this.dialogVisible = true;
             },
 
-            uploadSuccess(res,file, fileList){
-                console.log(res);
-                console.log(file);
-                console.log(fileList);
+            uploadSuccess(res, file, fileList) {
+                this.changedPicList.push({id: res.data.id});
+                // console.log(this.changedPicList);
+                // console.log(file);
+                // console.log(fileList);
             },
-            submitChange(){
-                if(this.$route.query.id){
+            submitChange() {
+                if (this.$route.query.id) {
                     this.$axios({
-                        url:"/post_update/" + this.$route.query.id,
-                        method:"post",
-                        data:{
-                            title:this.input,
-                            content:this.content,
-                            categories:this.changedcategoriesList,
-                            // cover:
+                        url: "/post_update/" + this.$route.query.id,
+                        method: "post",
+                        data: {
+                            title: this.input,
+                            content: this.content,
+                            categories: this.changedcategoriesList,
+                            cover: this.changedPicList,
+                            type: Number(this.radio)
                         }
-                    }).then(res=>{
+                    }).then(res => {
+                        // console.log(res);
+                    })
+                } else {
+                    this.$axios({
+                        url: '/post',
+                        method: "post",
+                        data: {
+                            title: this.input,
+                            content: this.content,
+                            categories: this.changedcategoriesList,
+                            cover: this.changedPicList,
+                            type: Number(this.radio)
+                        }
+                    }).then(res => {
                         console.log(res);
                     })
-                }else {
 
                 }
-
             }
         }
     }

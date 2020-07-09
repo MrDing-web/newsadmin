@@ -14,7 +14,7 @@ axios.interceptors.request.use(function (config) {
         // 在发送请求之前做些什么
     // console.log(config)
     if(!config.headers.Authorization){
-        config.headers.Authorization = "Bearer " + localStorage.getItem("token")
+        config.headers.Authorization = "Bearer " + localStorage.getItem("token");
     }
         return config;
     },function (error) {
